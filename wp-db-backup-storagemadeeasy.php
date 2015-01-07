@@ -5,7 +5,7 @@ Plugin URI: http://storagemadeeasy.com
 Description: On-demand backup of your WordPress database. Based on <a href="http://wordpress.org/extend/plugins/wp-db-backup/">WP-DB-Backup</a> This plugin is licensed under GNU GPL, version 2. Source code is available from <a href="http://code.google.com/p/smestorage/">http://code.google.com/p/smestorage</a>
 Author: Storage Made Easy
 Author URI: http://storagemadeeasy.com/
-Version: 2.2
+Version: 2.2.1
 */
  session_start();
 

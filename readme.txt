@@ -3,7 +3,7 @@ Contributors: StorageMadeEasy
 Tags: Cloud, Backup, Amazon, S3, RackSpace, CleverSafe, FTP, OpenStack, Email, Box, iCloud, WebDav, Azure, OneDrive, Office365, Cloudian
 Requires at least: 2.6
 Tested up to: 4.1.1
-Stable tag: 2.2
+Stable tag: 2.2.1
 
 Back your WordPress blog up to any one of over 45 storage clouds including Amazon S3, RackSpace, OpenStack Swift, CleverSafe, Cloudian, FTP,WebDAV
 == Description ==
@@ -11,7 +11,7 @@ This plugin enables you to backup a WordPress database and content to StorageMad
 
 Contact us sales@storagemadeeasy.com about our professional option which includes the ability to encrypt the backup and to also schedule it.
 
-Note:This plugin is the latest and maintained version of https://wordpress.org/plugins/smestorage-multi-cloud-files-plug-in
+Note:This plugin is the latest and maintained version of deprecated https://wordpress.org/plugins/smestorage-multi-cloud-files-plug-in
 
 == Installation ==
 Please note the following with this Plugin
