@@ -5,7 +5,7 @@ Plugin URI: http://storagemadeeasy.com
 Description: On-demand backup of your WordPress database. Based on <a href="http://wordpress.org/extend/plugins/wp-db-backup/">WP-DB-Backup</a> This plugin is licensed under GNU GPL, version 2. Source code is available from <a href="http://code.google.com/p/smestorage/">http://code.google.com/p/smestorage</a>
 Author: Storage Made Easy
 Author URI: http://storagemadeeasy.com/
-Version: 2.2.1
+Version: 2.2.2
 */
  session_start();
 
@@ -56,7 +56,7 @@ class wpdbBackup_StorageMadeEasy {
 	var $basename;
 	var $page_url;
 	var $referer_check_key;
-	var $version = '2.2';
+	var $version = '2.2.2';
 
 	function gzip() {
 		return function_exists('gzopen');
@@ -113,7 +113,7 @@ class wpdbBackup_StorageMadeEasy {
 		$this->backup_filename=$this->makeBackupFilename();
 		$path=WP_BACKUP_DIR.$this->backup_filename;
 
-#		$src = WP_PLUGIN_URL."/storagemadeeasy-multi-cloud-files-plug-in/sme/index.php?u=".$u."&p=".$p."&path=".$path;
+#		$src = WP_PLUGIN_URL."/storagemadeeasy-multicloud-files-backup/sme/index.php?u=".$u."&p=".$p."&path=".$path;
 		if(!isset($_GET['_wpnonce']) && isset($_SESSION['path'])){
 			$_SESSION['path2']=$_SESSION['path'];
 			$_SESSION['path']=$path;
@@ -499,18 +499,18 @@ class wpdbBackup_StorageMadeEasy {
 	}
 
 	function includeLibs(){
-		if(file_exists(WP_PLUGIN_URL.'/storagemadeeasy-multi-cloud-files-plug-in/http.php')){
-			$path=WP_PLUGIN_URL.'/storagemadeeasy-multi-cloud-files-plug-in/';
-		}elseif(file_exists('../wp-content/plugins/storagemadeeasy-multi-cloud-files-plug-in/http.php')){
-			$path='../wp-content/plugins/storagemadeeasy-multi-cloud-files-plug-in/';
+		if(file_exists(WP_PLUGIN_URL.'/storagemadeeasy-multicloud-files-backup/http.php')){
+			$path=WP_PLUGIN_URL.'/storagemadeeasy-multicloud-files-backup/';
+		}elseif(file_exists('../wp-content/plugins/storagemadeeasy-multicloud-files-backup/http.php')){
+			$path='../wp-content/plugins/storagemadeeasy-multicloud-files-backup/';
 		}else{	# it is need for scheduler
-			$path='./wp-content/plugins/storagemadeeasy-multi-cloud-files-plug-in/';
+			$path='./wp-content/plugins/storagemadeeasy-multicloud-files-backup/';
 		}
 
-		if(file_exists('../wp-content/plugins/storagemadeeasy-multi-cloud-files-plug-in/pclzip.lib.php')){
-			include_once('../wp-content/plugins/storagemadeeasy-multi-cloud-files-plug-in/pclzip.lib.php');
+		if(file_exists('../wp-content/plugins/storagemadeeasy-multicloud-files-backup/pclzip.lib.php')){
+			include_once('../wp-content/plugins/storagemadeeasy-multicloud-files-backup/pclzip.lib.php');
 		}else{	# it is need for scheduler
-			include_once('./wp-content/plugins/storagemadeeasy-multi-cloud-files-plug-in/pclzip.lib.php');
+			include_once('./wp-content/plugins/storagemadeeasy-multicloud-files-backup/pclzip.lib.php');
 		}
 		include_once($path.'http.php');
 		include_once($path.'class.xmltoarray.php');
@@ -1235,7 +1235,7 @@ class wpdbBackup_StorageMadeEasy {
 	 * return string The text of the help menu.
 	 */
 	function help_menu() {
-		$text = "\n<a href=\"http://wordpress.org/extend/plugins/storagemadeeasy-multi-cloud-files-plug-in/\" target=\"_blank\">" . __('FAQ', 'wp-db-backup-storagemadeeasy') . '</a>';
+		$text = "\n<a href=\"http://wordpress.org/extend/plugins/storagemadeeasy-multicloud-files-backup/\" target=\"_blank\">" . __('FAQ', 'wp-db-backup-storagemadeeasy') . '</a>';
 		$text .= "\n<br />\n<a href=\"http://storagemadeeasy.com\" target=\"_blank\">" . __('Support', 'wp-db-backup-storagemadeeasy') . '</a>';
 		return $text;
 	}
@@ -1932,12 +1932,12 @@ class wpdbBackup_StorageMadeEasy {
 			$storagemadeeasy_server=get_option('storagemadeeasy_server');
 			if(empty($storagemadeeasy_server)) $storagemadeeasy_server='storagemadeeasy.com';
 			$pathToImage='./';
-			if(file_exists(WP_PLUGIN_URL.'/storagemadeeasy-multi-cloud-files-plug-in/http.php')){
-				$pathToImage=WP_PLUGIN_URL.'/storagemadeeasy-multi-cloud-files-plug-in/';
-			}elseif(file_exists('../wp-content/plugins/storagemadeeasy-multi-cloud-files-plug-in/http.php')){
-				$pathToImage='../wp-content/plugins/storagemadeeasy-multi-cloud-files-plug-in/';
+			if(file_exists(WP_PLUGIN_URL.'/storagemadeeasy-multicloud-files-backup/http.php')){
+				$pathToImage=WP_PLUGIN_URL.'/storagemadeeasy-multicloud-files-backup/';
+			}elseif(file_exists('../wp-content/plugins/storagemadeeasy-multicloud-files-backup/http.php')){
+				$pathToImage='../wp-content/plugins/storagemadeeasy-multicloud-files-backup/';
 			}else{	# it is need for scheduler
-				$pathToImage='./wp-content/plugins/storagemadeeasy-multi-cloud-files-plug-in/';
+				$pathToImage='./wp-content/plugins/storagemadeeasy-multicloud-files-backup/';
 			}
 		?>
 		<fieldset class="options"><legend>SME Details</legend>
