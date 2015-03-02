@@ -1,5 +1,5 @@
 <?php
-if(!defined('_STORAGEMADEEASY_API_URL'))		define('_STORAGEMADEEASY_API_URL','http://'. get_option('storagemadeeasy_server') .'/api/');
+if(!defined('_STORAGEMADEEASY_API_URL'))		define('_STORAGEMADEEASY_API_URL', get_option('storagemadeeasy_server') .'/api/');
 
 /**
 * Takes REST command, process request and return array created from returned xml document
@@ -14,10 +14,15 @@ function processRequest($request,$debug=0,$data=array(),$files=array()){
 	$http->html_debug=1;
 	$http->follow_redirect=1;
 
-	if(strpos($request, 'http://')!==false){
+	if(strpos($request, '://')!==false){
 		$url=$request;
 	}else{
-		$url=_STORAGEMADEEASY_API_URL.$request;
+		$url = '';
+		if(strpos(_STORAGEMADEEASY_API_URL, '://')===false){
+			$url = 'https://';
+		}
+		
+		$url .= _STORAGEMADEEASY_API_URL.$request;
 	}
 
 
