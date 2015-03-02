@@ -5,7 +5,7 @@ Plugin URI: http://storagemadeeasy.com
 Description: On-demand backup of your WordPress database. Based on <a href="http://wordpress.org/extend/plugins/wp-db-backup/">WP-DB-Backup</a> This plugin is licensed under GNU GPL, version 2. Source code is available from <a href="http://code.google.com/p/smestorage/">http://code.google.com/p/smestorage</a>
 Author: Storage Made Easy
 Author URI: http://storagemadeeasy.com/
-Version: 2.2.2
+Version: 2.2.3
 */
  session_start();
 
@@ -43,7 +43,7 @@ if(!defined('ROWS_PER_SEGMENT'))	define('ROWS_PER_SEGMENT', 200);
  */
 // define('MOD_EVASIVE_OVERRIDE', false);
 if(!defined('_STORAGEMADEEASY_MOD_EVASIVE_DELAY'))	define('_STORAGEMADEEASY_MOD_EVASIVE_DELAY', '500');
-if(!defined('_STORAGEMADEEASY_API_URL'))	define('_STORAGEMADEEASY_API_URL','http://'. get_option('storagemadeeasy_server') .'/api/');
+if(!defined('_STORAGEMADEEASY_API_URL'))	define('_STORAGEMADEEASY_API_URL', get_option('storagemadeeasy_server') .'/api/');
 
 
 
@@ -55,8 +55,9 @@ class wpdbBackup_StorageMadeEasy {
 	var $errors = array();
 	var $basename;
 	var $page_url;
+	var $lastSMEerror = '';
 	var $referer_check_key;
-	var $version = '2.2.2';
+	var $version = '2.2.3';
 
 	function gzip() {
 		return function_exists('gzopen');
@@ -93,12 +94,22 @@ class wpdbBackup_StorageMadeEasy {
 		add_option('storagemadeeasy_username','');
 		add_option('storagemadeeasy_password','');
 		
-		if(!empty($_REQUEST['username']) && isset($_REQUEST['password'])){
-			update_option('storagemadeeasy_username', $_REQUEST['username']);
-			update_option('storagemadeeasy_password', $_REQUEST['password']);
+		if(!empty($_REQUEST['username']) && isset($_REQUEST['password']) && !empty($_REQUEST['storagemadeeasy_server'])){
+			if(strpos($_REQUEST['storagemadeeasy_server'], 'http://')===false && strpos($_REQUEST['storagemadeeasy_server'], 'https://')===false){
+				$_REQUEST['storagemadeeasy_server'] = 'http://'. $_REQUEST['storagemadeeasy_server'];
+			}
+			
+			if(strrpos($_REQUEST['storagemadeeasy_server'], '/')===strlen($_REQUEST['storagemadeeasy_server'])-1){
+				$_REQUEST['storagemadeeasy_server'] = substr($_REQUEST['storagemadeeasy_server'], 0, strlen($_REQUEST['storagemadeeasy_server'])-1);
+			}
+
+			// We are checking if credentials are correct
+			if($this->isCredentialsCorrect($_REQUEST['username'], $_REQUEST['password'], $_REQUEST['storagemadeeasy_server'])==""){
+				update_option('storagemadeeasy_username', $_REQUEST['username']);
+				update_option('storagemadeeasy_password', $_REQUEST['password']);
+				update_option('storagemadeeasy_server', $_REQUEST['storagemadeeasy_server']);
+			}
 		}
-		
-		if(!empty($_REQUEST['storagemadeeasy_server']))	update_option('storagemadeeasy_server',$_REQUEST['storagemadeeasy_server']);
 			
 		if(get_option('storagemadeeasy_server', false)==false) update_option('storagemadeeasy_server','storagemadeeasy.com');
 
@@ -325,10 +336,12 @@ class wpdbBackup_StorageMadeEasy {
 			$token='';
 			$error='';
 			$folderid='';
-			if($a[0]=='' || empty($a[1]['token'])){
+			if(!empty($a[1]['token'])){
 				$token=$a[1]['token'];
-			}else
-				$error='Wrong storagemadeeasy login';
+			}else{
+				$error='Wrong login or password from Storage Made Easy';
+				if(!empty($a[1]['statusmessage']) && $a[1]['statusmessage']!='Success') $error .= $a[1]['statusmessage'];
+			}
 		}
 
 		if($error==''){
@@ -421,6 +434,35 @@ class wpdbBackup_StorageMadeEasy {
 		exit;
 	}
 
+	function isCredentialsCorrect($username, $password, $SMEserver){
+		# if credentials is correct then return empty string else string with error message.
+		$error='';
+		
+		$this->includeLibs();
+		
+		if(strpos($SMEserver, 'http://')===false && strpos($SMEserver, 'https://')===false){
+			$SMEserver = 'http://'. $SMEserver;
+		}
+		
+		if(strrpos($SMEserver, '/')===strlen($SMEserver)-1){
+			$SMEserver = substr($SMEserver, 0, strlen($SMEserver)-1);
+		}
+		
+		$SMEserver .= '/api/';
+
+		$a=processRequest($SMEserver.'*/gettoken/'.encodeArgs(array($username, $password)));
+		if(!empty($a[1]['token'])){
+			$token=$a[1]['token'];
+		}else{
+			$error='Wrong login, password or server from Storage Made Easy';
+			if(!empty($a[1]['statusmessage']) && $a[1]['statusmessage']!='Success') $error = $a[1]['statusmessage'];
+		}
+
+		$this->lastSMEerror = $error;
+		return $error;
+	}
+	
+	
 	# This function send file to SME
 	function doUploadFile($path, $token, $pid, $name, $descr='', $tags='', $encryptphrase=''){
 		$res=array('error'=>false, 'id'=>'', 'errormessage'=>'');
@@ -453,7 +495,11 @@ class wpdbBackup_StorageMadeEasy {
 		$uploadcode=$a[1]['uploadcode'];
 
 		$a='';
-		$url='http://'. get_option('storagemadeeasy_server') .'/cgi-bin/uploader/uploader1.cgi?'. $uploadcode .',0,0';
+		$url=get_option('storagemadeeasy_server') .'/cgi-bin/uploader/uploader1.cgi?'. $uploadcode .',0,0';
+		if(strpos($url, '://')===false){
+			$url='https://'. $url;
+		}
+
 		if(function_exists('curl_init')){		# Try to use cURL.
 			$process = curl_init($url);
 			#curl_setopt($process, CURLOPT_HTTPHEADER, $headers); 
@@ -780,9 +826,9 @@ class wpdbBackup_StorageMadeEasy {
 						m="plugins";
 					}
 					if(m==""){
-						m="Unknown error   ";
+						m="Unknown error.<br>"+iFrameBody.innerHTML;
 					}else{
-						m="Unknown error. Cannot create backup of the folder \""+ m +"\".";
+						m="Cannot create backup of the folder \""+ m +"\".<br>"+iFrameBody.innerHTML;
 					}
 					
 					setProgress(m);
@@ -1941,12 +1987,19 @@ class wpdbBackup_StorageMadeEasy {
 			}
 		?>
 		<fieldset class="options"><legend>SME Details</legend>
+			<?php
+		 	if(!empty($this->lastSMEerror) && !empty($_REQUEST['username']) && isset($_REQUEST['password']) && !empty($_REQUEST['storagemadeeasy_server'])){
+			?>
+				<div style="color:#B51010;font-weight: bold;font-size:14px;"><?php echo $this->lastSMEerror; ?></div>
+			<?php
+		 	}
+			?>
 		<table>
 		 <form name="form3" action="tools.php?page=wp-db-backup-storagemadeeasy" method="post">
 		 <tr><td>Server</td><td>
 				<table border="0" cellpadding="0" cellspacing="0" style="margin-top:2px; margin-bottom:2px;">
 					<tr>
-						<td><input type="text" id="storagemadeeasy_server" name="storagemadeeasy_server" value="<?php echo $storagemadeeasy_server; ?>" style="width:232px; height:22px; margin-right:0px; padding-right:0px"></td>
+						<td style="margin:0px; padding:0px; valign:top;"><input type="text" id="storagemadeeasy_server" name="storagemadeeasy_server" value="<?php echo $storagemadeeasy_server; ?>" style="width:232px; height:24px; margin:0px; padding-top:0px; padding-bottom:0px;"></td>
 						<td style="margin:0px; padding:0px; background-image:url(<?php echo $pathToImage;?>selectButton.png); background-repeat:no-repeat; overflow: hidden;">
 							<select size="1" id="storagemadeeasy_server2" style="width:18px; margin-left:0px; padding-left:0px; height:22px; opacity:0.0;" onClick="updateServer();" onChange="updateServer();">
 								<option value="" selected="selected"> </option>
@@ -1966,6 +2019,7 @@ class wpdbBackup_StorageMadeEasy {
 
 		 <tr><td>Username</td><td><input type="text" name="username" style="width:250px" value="<?php echo $username;?>" /></td></tr>
 		 <tr><td>Password</td><td><input type="password" name="password" style="width:250px" value="<?php echo $password;?>" /></td></tr>
+		 <tr><td>SME Folder</td><td><input type="text" name="smefolder" style="width:250px" value="<?php echo "/My WordPress backup";?>" disabled="disabled"/></td></tr>
 		 <tr><td colspan="2">Don't have account? <a href="http://storagemadeeasy.com/pricing/#free" target="_blank">Sign Up for Free</a></td></tr>
 		 <tr height="2px"><td colspan="2"></td></tr>
 		 <tr><td colspan="2"><input type="submit" value=" Submit " /></td></tr>

@@ -2,8 +2,8 @@
 Contributors: StorageMadeEasy
 Tags: Cloud, Backup, Amazon, S3, RackSpace, Cloud Files, FTP, GMail, Email, Box.net, MobileMe, iDisk, WebDav, Microsoft, SkyDrive
 Requires at least: 2.6
-Tested up to: 4.1
-Stable tag: 2.2.2
+Tested up to: 4.1.1
+Stable tag: 2.2.3
 
 Back your WordPress blog up to any one of 40 storage clouds including S3, RackSpace Cloud Files, SkyDrive, DropBox, Gmail, Box.net, RackSpace Cloud Files, FTP & WebDAV
 == Description ==
